@@ -1,1 +1,1 @@
-# This is a android app with wristband for ZJUT students!
+This is a android app with wristband for ZJUT students!
