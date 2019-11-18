@@ -1,16 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
         <include layout="@layout/module_title" />
 
-    </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/title_layout" />
+
+        <com.luseen.spacenavigation.SpaceNavigationView
+            android:id="@+id/space_navigation_view"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            app:active_item_color="#495A80"
+            app:centre_button_color="@color/colorPrimary"
+            app:centre_button_icon="@drawable/ic_run"
+            app:inactive_item_color="@color/white"
+            app:space_background_color="@color/black" />
+
+    </RelativeLayout>
 
     <fragment
         android:id="@+id/navigation_fragment"

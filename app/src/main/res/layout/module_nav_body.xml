@@ -4,13 +4,28 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/logout_layout"
         android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_margin="10dp"
-        android:gravity="center"
-        android:text="@string/logout_text"
-        android:textColor="#FF1493"
-        android:textSize="20sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_margin="10dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_logout" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/logout_text"
+            android:textColor="#FF1493"
+            android:textSize="18sp" />
+    </LinearLayout>
+
 
 </LinearLayout>
