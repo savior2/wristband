@@ -1,7 +1,6 @@
 package com.zjut.wristband.application
 
 import android.app.Application
-import android.content.Context
 import com.lifesense.ble.LsBleManager
 import org.litepal.LitePal
 

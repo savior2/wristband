@@ -24,7 +24,6 @@ import com.lifesense.ble.bean.LsDeviceInfo
 import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
 import com.zjut.wristband.R
-import com.zjut.wristband.util.LogUtil
 import java.util.*
 
 class DeviceConnectFragment : Fragment() {
@@ -182,6 +181,8 @@ class DeviceConnectFragment : Fragment() {
                 builder.setTitle("确定连接此手环？")
                 builder.setCancelable(false)
                 builder.setPositiveButton("确定") { _, _ ->
+                    Toast.makeText(this@DeviceConnectFragment.activity, "连接成功！", Toast.LENGTH_SHORT)
+                        .show()
                     itemView.setBackgroundColor(
                         resources.getColor(
                             R.color.white

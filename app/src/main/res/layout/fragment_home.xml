@@ -1,7 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
+    <com.shinelw.library.ColorArcProgressBar
+        android:id="@+id/process_bar"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center_horizontal"
+        app:back_width="4dp"
+        app:front_color1="#00ff00"
+        app:front_color2="#ffff00"
+        app:front_color3="#ff0000"
+        app:front_width="6dp"
+        app:is_need_content="true"
+        app:is_need_title="true"
+        app:is_need_unit="true"
+        app:max_value="6000"
+        app:string_title="今日已走"
+        app:string_unit="步"
+        app:total_engle="270" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="@color/grey" />
+
 
 </LinearLayout>
