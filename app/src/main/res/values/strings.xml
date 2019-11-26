@@ -9,4 +9,9 @@
     <string name="user_sex_text">性别：</string>
     <string name="device_scan_text">搜索附近手环</string>
     <string name="app_info_text">关于浙工健行</string>
+    <string name="distance_unit_text">公里</string>
+    <string name="time_span_text">时长</string>
+    <string name="speed_text">速度</string>
+    <string name="start_run_text">开始运动</string>
+    <string name="finish_run_text">结束运动</string>
 </resources>
