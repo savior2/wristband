@@ -10,10 +10,6 @@ import com.zjut.wristband.util.*
 
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        val TAG = "MainActivity"
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -53,5 +49,9 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }.start()
+    }
+
+    companion object {
+        val TAG = "MainActivity"
     }
 }

@@ -9,6 +9,28 @@
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/device_manage_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_device" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:text="@string/device_manage_text"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/app_info_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,7 +63,7 @@
                 android:layout_height="20dp"
                 android:layout_margin="10dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_logout" />
+                android:src="@drawable/ic_exit" />
 
             <TextView
                 android:layout_width="wrap_content"

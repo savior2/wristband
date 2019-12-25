@@ -4,10 +4,15 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.IBinder
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,11 +24,16 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lifesense.ble.LsBleManager
+import com.lifesense.ble.ReceiveDataCallback
 import com.lifesense.ble.SearchCallback
 import com.lifesense.ble.bean.LsDeviceInfo
+import com.lifesense.ble.bean.PedometerData
 import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
+import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
+import com.zjut.wristband.service.BleService
+import com.zjut.wristband.util.MemoryVar
 import java.util.*
 
 class DeviceConnectFragment : Fragment() {
@@ -36,6 +46,17 @@ class DeviceConnectFragment : Fragment() {
 
 
     private val mSearchCallback = MySearchCallback()
+    private val mDataCallback = MyDataCallback()
+    private var mBleService: BleService? = null
+    private val mServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, rawBinder: IBinder) {
+            mBleService = (rawBinder as BleService.MyBinder).getService()
+        }
+
+        override fun onServiceDisconnected(classname: ComponentName) {
+            mBleService = null
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,6 +86,34 @@ class DeviceConnectFragment : Fragment() {
         mDeviceRecyclerView.adapter = mDeviceAdapter
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+            mScanDeviceSwitch.isChecked = false
+            mDeviceList.clear()
+            mDeviceAdapter.notifyDataSetChanged()
+            LsBleManager.getInstance().stopSearch()
+        } else {
+            Log.e(TAG, "device scan show")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val intent = Intent(this@DeviceConnectFragment.activity, BleService::class.java)
+        this@DeviceConnectFragment.activity!!.bindService(
+            intent,
+            mServiceConnection,
+            Context.BIND_AUTO_CREATE
+        )
+        this@DeviceConnectFragment.activity!!.startService(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        this@DeviceConnectFragment.activity!!.unbindService(mServiceConnection)
+    }
+
     private fun openBlueTooth() {
         if (!LsBleManager.getInstance().isOpenBluetooth) {
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -77,12 +126,12 @@ class DeviceConnectFragment : Fragment() {
     private fun getLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 this@DeviceConnectFragment.activity!!,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             this.requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-                REQUEST_CODE_ACCESS_COARSE_LOCATION
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_CODE_ACCESS_FINE_LOCATION
             )
         } else {
             beginScan()
@@ -111,7 +160,7 @@ class DeviceConnectFragment : Fragment() {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            REQUEST_CODE_ACCESS_COARSE_LOCATION -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            REQUEST_CODE_ACCESS_FINE_LOCATION -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 beginScan()
             } else {
                 mScanDeviceSwitch.isChecked = false
@@ -154,12 +203,24 @@ class DeviceConnectFragment : Fragment() {
         }
     }
 
+    private inner class MyDataCallback : ReceiveDataCallback() {
+        override fun onReceivePedometerMeasureData(p0: Any?, p1: PacketProfile?, p2: String?) {
+            super.onReceivePedometerMeasureData(p0, p1, p2)
+        }
+
+        override fun onReceivePedometerData(p0: PedometerData?) {
+            super.onReceivePedometerData(p0)
+        }
+
+    }
+
     //internal很重要
     private inner class DeviceHolder internal constructor(
         inflater: LayoutInflater,
         parent: ViewGroup
     ) : RecyclerView.ViewHolder(inflater.inflate(R.layout.list_item_device, parent, false)),
         View.OnClickListener {
+        private lateinit var mDevice: LsDeviceInfo
         private val mDeviceNameTextView: TextView =
             itemView.findViewById(R.id.device_name_text_view)
         private val mDeviceAddressTextView: TextView =
@@ -170,6 +231,7 @@ class DeviceConnectFragment : Fragment() {
         }
 
         internal fun bind(lsDeviceInfo: LsDeviceInfo) {
+            mDevice = lsDeviceInfo
             mDeviceNameTextView.text = lsDeviceInfo.deviceName
             mDeviceAddressTextView.text = lsDeviceInfo.macAddress
         }
@@ -181,7 +243,20 @@ class DeviceConnectFragment : Fragment() {
                 builder.setTitle("确定连接此手环？")
                 builder.setCancelable(false)
                 builder.setPositiveButton("确定") { _, _ ->
-                    Toast.makeText(this@DeviceConnectFragment.activity, "连接成功！", Toast.LENGTH_SHORT)
+                    LsBleManager.getInstance().stopDataReceiveService()
+                    LsBleManager.getInstance().setMeasureDevice(null)
+                    LsBleManager.getInstance().addMeasureDevice(mDevice)
+                    LsBleManager.getInstance()
+                        .startDataReceiveService(object : ReceiveDataCallback() {
+
+                        })
+                    MemoryVar.device = mDevice
+                    //mBleService?.connect(BluetoothAdapter.getDefaultAdapter(), mDevice.macAddress)
+                    Toast.makeText(
+                        this@DeviceConnectFragment.activity,
+                        "连接成功！",
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
                     itemView.setBackgroundColor(
                         resources.getColor(
@@ -223,6 +298,6 @@ class DeviceConnectFragment : Fragment() {
     companion object {
         private val TAG = "DeviceConnectFragment"
         private val ENABLE_BLUETOOTH = 1
-        private val REQUEST_CODE_ACCESS_COARSE_LOCATION = 1
+        private val REQUEST_CODE_ACCESS_FINE_LOCATION = 1
     }
 }
