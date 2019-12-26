@@ -37,6 +37,14 @@
         android:layout_marginRight="20dp"
         android:background="#CCCCCC" />
 
+    <ProgressBar
+        android:id="@+id/process_bar"
+        style="@style/Spinner"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/device_recycler_view"
         android:layout_width="match_parent"

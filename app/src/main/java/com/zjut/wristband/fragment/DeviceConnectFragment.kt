@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
@@ -34,11 +35,15 @@ import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
 import com.zjut.wristband.service.BleService
 import com.zjut.wristband.util.MemoryVar
+import com.zjut.wristband.util.SharedPreFile
+import com.zjut.wristband.util.SharedPreKey
+import com.zjut.wristband.util.SharedPreUtil
 import java.util.*
 
 class DeviceConnectFragment : Fragment() {
 
     private lateinit var mScanDeviceSwitch: Switch
+    private lateinit var mProgressBar: ProgressBar
     private lateinit var mDeviceRecyclerView: RecyclerView
 
     private val mDeviceList = ArrayList<LsDeviceInfo>()
@@ -65,6 +70,7 @@ class DeviceConnectFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_device_connect, container, false)
         mScanDeviceSwitch = view.findViewById(R.id.scan_device_switch)
+        mProgressBar = view.findViewById(R.id.process_bar)
         mDeviceRecyclerView = view.findViewById(R.id.device_recycler_view)
         return view
     }
@@ -75,9 +81,7 @@ class DeviceConnectFragment : Fragment() {
             if (isChecked) {
                 openBlueTooth()
             } else {
-                mDeviceList.clear()
-                mDeviceAdapter.notifyDataSetChanged()
-                LsBleManager.getInstance().stopSearch()
+                stopScan()
             }
         }
         val linearLayoutManager = LinearLayoutManager(this@DeviceConnectFragment.activity)
@@ -89,12 +93,8 @@ class DeviceConnectFragment : Fragment() {
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (hidden) {
-            mScanDeviceSwitch.isChecked = false
-            mDeviceList.clear()
-            mDeviceAdapter.notifyDataSetChanged()
-            LsBleManager.getInstance().stopSearch()
+            stopScan()
         } else {
-            Log.e(TAG, "device scan show")
         }
     }
 
@@ -173,8 +173,17 @@ class DeviceConnectFragment : Fragment() {
 
 
     private fun beginScan() {
+        mProgressBar.visibility = View.VISIBLE
         LsBleManager.getInstance()
             .searchLsDevice(mSearchCallback, getDeviceTypes(), BroadcastType.ALL)
+    }
+
+    private fun stopScan() {
+        mScanDeviceSwitch.isChecked = false
+        mProgressBar.visibility = View.GONE
+        mDeviceList.clear()
+        mDeviceAdapter.notifyDataSetChanged()
+        LsBleManager.getInstance().stopSearch()
     }
 
     private fun getDeviceTypes(): List<DeviceType> {
@@ -206,10 +215,23 @@ class DeviceConnectFragment : Fragment() {
     private inner class MyDataCallback : ReceiveDataCallback() {
         override fun onReceivePedometerMeasureData(p0: Any?, p1: PacketProfile?, p2: String?) {
             super.onReceivePedometerMeasureData(p0, p1, p2)
+            Log.e("TAG","onReceivePedometerMeasureData: $p0")
+            when (p0) {
+                is List<*> -> {
+                    val stat = p0[p0.size - 1] as PedometerData
+                    Log.e("TAG","onReceivePedometerMeasureData: time=${stat.measureTime} steps=${stat.walkSteps}")
+                    val sp =
+                        SharedPreUtil(this@DeviceConnectFragment.activity!!, SharedPreFile.STATUS)
+                    sp.editor.putString(SharedPreKey.TIME, stat.measureTime.toString())
+                    sp.editor.putInt(SharedPreKey.STEP, stat.walkSteps)
+                    sp.editor.apply()
+                }
+            }
         }
 
         override fun onReceivePedometerData(p0: PedometerData?) {
             super.onReceivePedometerData(p0)
+            Log.e(TAG, "onReceivePedometerData: $p0")
         }
 
     }
@@ -246,10 +268,7 @@ class DeviceConnectFragment : Fragment() {
                     LsBleManager.getInstance().stopDataReceiveService()
                     LsBleManager.getInstance().setMeasureDevice(null)
                     LsBleManager.getInstance().addMeasureDevice(mDevice)
-                    LsBleManager.getInstance()
-                        .startDataReceiveService(object : ReceiveDataCallback() {
-
-                        })
+                    LsBleManager.getInstance().startDataReceiveService(mDataCallback)
                     MemoryVar.device = mDevice
                     //mBleService?.connect(BluetoothAdapter.getDefaultAdapter(), mDevice.macAddress)
                     Toast.makeText(

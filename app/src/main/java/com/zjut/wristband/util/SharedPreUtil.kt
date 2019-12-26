@@ -14,6 +14,7 @@ class SharedPreUtil(val context: Context, val filename: String) {
 
 object SharedPreFile {
     const val ACCOUNT = "account"
+    const val STATUS = "status"
 }
 
 object SharedPreKey {
@@ -22,5 +23,8 @@ object SharedPreKey {
     const val NAME = "name"
     const val SEX = "sex"
     const val TOKEN = "token"
+
+    const val TIME = "time"
+    const val STEP = "step"
 }
 

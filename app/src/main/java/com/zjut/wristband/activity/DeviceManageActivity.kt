@@ -52,7 +52,6 @@ class DeviceManageActivity : AppCompatActivity() {
             mFunDisconnectLayout.setBackgroundColor(resources.getColor(R.color.grey))
             val builder = AlertDialog.Builder(this)
             builder.setTitle("确定断开连接？")
-            builder.setCancelable(false)
             builder.setPositiveButton("确定") { _, _ ->
                 LsBleManager.getInstance().stopDataReceiveService()
                 MemoryVar.device = null
@@ -64,6 +63,11 @@ class DeviceManageActivity : AppCompatActivity() {
                     resources.getColor(R.color.white)
                 )
             }
+            builder.setOnCancelListener{
+                mFunDisconnectLayout.setBackgroundColor(
+                    resources.getColor(R.color.white)
+                )
+            }
             builder.create().show()
         }
 
@@ -71,7 +75,6 @@ class DeviceManageActivity : AppCompatActivity() {
             mFunHrDetectModeLayout.setBackgroundColor(resources.getColor(R.color.grey))
             val builder = AlertDialog.Builder(this)
             builder.setTitle("打开/关闭心率监测？")
-            builder.setCancelable(false)
             builder.setSingleChoiceItems(
                 arrayOf("关闭", "打开"), -1
             ) { p0, p1 ->
@@ -89,6 +92,9 @@ class DeviceManageActivity : AppCompatActivity() {
                             OnSettingListener() {
                         })
                 p0.dismiss()
+            }
+            builder.setOnCancelListener {
+                mFunHrDetectModeLayout.setBackgroundColor(resources.getColor(R.color.white))
             }
             builder.create().show()
         }

@@ -30,5 +30,13 @@
         android:layout_marginEnd="15dp"
         android:background="@color/grey" />
 
+    <Button
+        android:id="@+id/sync_steps_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:text="@string/sync_steps_text" />
+
 
 </LinearLayout>

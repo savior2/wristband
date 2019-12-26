@@ -9,8 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.lifesense.ble.LsBleManager
 import com.zjut.wristband.R
 import com.zjut.wristband.activity.AboutActivity
 import com.zjut.wristband.activity.DeviceManageActivity
@@ -56,7 +56,7 @@ class NavigationFragment : Fragment() {
             mDeviceManageLayout.setBackgroundColor(resources.getColor(R.color.grey))
             if (MemoryVar.device == null) {
                 val builder = AlertDialog.Builder(activity)
-                builder.setTitle("当前无设备连接")
+                builder.setTitle("请先连接手环！")
                 builder.setCancelable(false)
                 builder.setPositiveButton("确定") { _, _ ->
                     mDeviceManageLayout.setBackgroundColor(
@@ -109,6 +109,9 @@ class NavigationFragment : Fragment() {
         if (WebUtil.isNetworkConnected(this@NavigationFragment.activity!!)) {
             //WebUtil.doPost(WebUtil.DOMAIN + WebUtil.LOGIN_URI, mapOf()) {}
         }
+
+        //断开手环
+        LsBleManager.getInstance().stopDataReceiveService()
 
         //清除用户名和密码
         val sp = SharedPreUtil(this@NavigationFragment.activity!!, SharedPreFile.ACCOUNT)
