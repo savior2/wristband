@@ -1,7 +1,10 @@
 package com.zjut.wristband.activity
 
 import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
@@ -34,6 +37,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var mCurrentFragment: Fragment
     private var mCurrentIndex = 0
 
+    private lateinit var mBindReceiver: BroadcastReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +45,12 @@ class HomeActivity : AppCompatActivity() {
         initFragments()
         initial()
         initComponent(savedInstanceState)
+        registerReceiver()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(mBindReceiver)
     }
 
     private fun initial() {
@@ -150,11 +160,37 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun registerReceiver() {
+        val filter = IntentFilter()
+        filter.addAction(ACTION_DEVICE_BIND)
+        mBindReceiver = BindBroadcastReceiver()
+        registerReceiver(mBindReceiver, filter)
+
+    }
+
+    private inner class BindBroadcastReceiver : BroadcastReceiver() {
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            val action = p1?.action ?: return
+            when (action) {
+                ACTION_DEVICE_BIND -> {
+                    mTitleTextView.text = "首页"
+                    mCurrentIndex = INDEX_HOME
+                    replaceFragment(mHomeFragment)
+                    mSpaceNavigationView.changeCurrentItem(mCurrentIndex)
+                }
+                else -> {
+
+                }
+            }
+        }
+    }
+
     companion object {
         private val TAG = "HomeActivity"
         private val INDEX_HOME = 0
         private val INDEX_DEVICE = 1
         private val REQUEST_CODE_ACCESS_COARSE_LOCATION = 1
+        val ACTION_DEVICE_BIND = "com.zjut.wristband.ACTION_DEVICE_BIND"
     }
 
 }

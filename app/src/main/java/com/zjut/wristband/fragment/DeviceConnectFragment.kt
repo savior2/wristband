@@ -33,6 +33,7 @@ import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
 import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
+import com.zjut.wristband.activity.HomeActivity
 import com.zjut.wristband.service.BleService
 import com.zjut.wristband.util.MemoryVar
 import com.zjut.wristband.util.SharedPreFile
@@ -190,6 +191,11 @@ class DeviceConnectFragment : Fragment() {
         return listOf(DeviceType.PEDOMETER)
     }
 
+    private fun sendBindBroadcast(action: String) {
+        val intent = Intent(action)
+        this@DeviceConnectFragment.activity?.sendBroadcast(intent)
+    }
+
 
     private inner class MySearchCallback : SearchCallback() {
         override fun onSearchResults(lsDeviceInfo: LsDeviceInfo) {
@@ -215,11 +221,14 @@ class DeviceConnectFragment : Fragment() {
     private inner class MyDataCallback : ReceiveDataCallback() {
         override fun onReceivePedometerMeasureData(p0: Any?, p1: PacketProfile?, p2: String?) {
             super.onReceivePedometerMeasureData(p0, p1, p2)
-            Log.e("TAG","onReceivePedometerMeasureData: $p0")
+            Log.e("TAG", "onReceivePedometerMeasureData: $p0")
             when (p0) {
                 is List<*> -> {
                     val stat = p0[p0.size - 1] as PedometerData
-                    Log.e("TAG","onReceivePedometerMeasureData: time=${stat.measureTime} steps=${stat.walkSteps}")
+                    Log.e(
+                        "TAG",
+                        "onReceivePedometerMeasureData: time=${stat.measureTime} steps=${stat.walkSteps}"
+                    )
                     val sp =
                         SharedPreUtil(this@DeviceConnectFragment.activity!!, SharedPreFile.STATUS)
                     sp.editor.putString(SharedPreKey.TIME, stat.measureTime.toString())
@@ -282,6 +291,7 @@ class DeviceConnectFragment : Fragment() {
                             R.color.white
                         )
                     )
+                    sendBindBroadcast(HomeActivity.ACTION_DEVICE_BIND)
                 }
                 builder.setNegativeButton("取消") { _, _ ->
                     itemView.setBackgroundColor(

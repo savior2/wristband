@@ -47,7 +47,7 @@ class HomeFragment : Fragment() {
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if (!hidden) {
+        if (hidden) {
             setSteps()
         }
     }

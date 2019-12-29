@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#B0C4DE"
+    android:background="#696969"
     android:gravity="center"
     android:orientation="vertical">
 
@@ -113,6 +114,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/control_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -141,8 +143,35 @@
                 android:paddingEnd="15dp"
                 android:text="@string/finish_run_text"
                 android:textSize="20sp" />
-
         </LinearLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/search_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_above="@+id/control_layout"
+            android:layout_marginBottom="10dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/search_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="GPS信号搜索中，请稍后..."
+                android:textColor="@android:color/black" />
+
+            <ProgressBar
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/search_text_view"
+                android:paddingEnd="5dp"
+                tools:ignore="RtlSymmetry" />
+        </RelativeLayout>
+
     </RelativeLayout>
 
 </LinearLayout>

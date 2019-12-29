@@ -7,10 +7,11 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.RelativeLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.baidu.location.BDLocation
 import com.baidu.location.BDLocationListener
@@ -33,6 +34,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
 
     private lateinit var mStartRunButton: Button
     private lateinit var mFinishRunButton: Button
+    private lateinit var mSearchBarRelativeLayout: RelativeLayout
+    private lateinit var mSearchTextView: TextView
 
     private lateinit var mMapView: MapView
     private lateinit var mBaiduMap: BaiduMap
@@ -51,9 +54,11 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
     private var mLastPoint = LatLng(0.0, 0.0)
 
     private val mPoints = arrayListOf<LatLng>()
+    private var mRunTime = 0L
+    private var mDistance = 0.0
 
-    private var startBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_start)
-    private var finishBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_end)
+    private val startBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_start)
+    private val finishBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_end)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,13 +79,14 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         mStartRunButton = findViewById(R.id.start_run_button)
         mStartRunButton.setOnClickListener {
             if (!mLocClient.isStarted) {
-                Toast.makeText(this, "start", Toast.LENGTH_SHORT).show()
+                mSearchBarRelativeLayout.visibility = View.VISIBLE
                 mBaiduMap.clear()
                 mLocClient.start()
             }
         }
         mFinishRunButton = findViewById(R.id.finish_run_button)
         mFinishRunButton.setOnClickListener {
+            mSearchBarRelativeLayout.visibility = View.GONE
             if (mLocClient.isStarted) {
                 mLocClient.stop()
                 mLastPoint = LatLng(0.0, 0.0)
@@ -88,6 +94,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                     mPoints.clear()
                     return@setOnClickListener
                 }
+
+                Log.e(TAG, "position: ${mPoints[mPoints.size - 1]}")
 
                 val oFinish = MarkerOptions()// 地图标记覆盖物参数配置类
                 oFinish.position(mPoints[mPoints.size - 1])
@@ -97,6 +105,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 mIsFirstLoc = true
             }
         }
+        mSearchBarRelativeLayout = findViewById(R.id.search_progress_bar)
+        mSearchTextView = findViewById(R.id.search_text_view)
     }
 
     private fun initMap() {
@@ -120,13 +130,15 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
             }
 
             override fun onMapStatusChangeFinish(p0: MapStatus?) {
-                mCurrentZoom = p0!!.zoom
+                if (!mIsFirstLoc) {
+                    mCurrentZoom = p0!!.zoom
+                }
             }
         })
 
         mLocClient.registerLocationListener(mLocListener)
         val option = LocationClientOption()
-        option.locationMode = LocationClientOption.LocationMode.Device_Sensors//只用gps定位，需要在室外定位。
+        //option.locationMode = LocationClientOption.LocationMode.Device_Sensors//只用gps定位，需要在室外定位。
         option.isOpenGps = true // 打开gps
         option.setCoorType("bd09ll") // 设置坐标类型
         option.setScanSpan(1000)
@@ -172,6 +184,13 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()))
     }
 
+    private fun setRunTime(seconds: Long) {
+        val hours = seconds / 3600
+        val minutes = (seconds % 3600) / 60
+        val secs = seconds % 60
+        val time = String.format("%02d:%02d:%02d", hours, minutes, secs)
+        mTimeSpanTextView.text = time
+    }
 
     private inner class MyListener : BDLocationListener {
         @SuppressLint("SetTextI18n")
@@ -179,6 +198,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
             if (p0 == null) {
                 return
             }
+
+            setRunTime(mRunTime++)
 
             //注意这里只接受gps点，需要在室外定位
             if (p0.locType == BDLocation.TypeGpsLocation) {
@@ -195,15 +216,18 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                     return
                 }
                 //从第二个点开始
+                mSearchBarRelativeLayout.visibility = View.GONE
                 val ll = LatLng(p0.latitude, p0.longitude)
                 mSpeedTextView.text = "${p0.speed} km/h"
                 if (DistanceUtil.getDistance(mLastPoint, ll) < 5) {
                     return
                 }
 
+                mDistance += DistanceUtil.getDistance(mLastPoint, ll)
+                mDistanceTextView.text = String.format("%.2f", mDistance)
+                locate(ll)
                 mPoints.add(ll)
                 mLastPoint = ll
-                locate(ll)
                 mBaiduMap.clear()
 
                 //起始点图层也会被清除，重新绘画
@@ -232,7 +256,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         if (Math.abs(x - mLastX) > 1.0) {
             mCurrentDirection = x.toInt()
             val mLocData = MyLocationData.Builder().accuracy(0f)
-                .direction(mCurrentDirection.toFloat()).latitude(mCurrentLat).longitude(mCurrentLon)
+                .direction(mCurrentDirection.toFloat()).latitude(mCurrentLat)
+                .longitude(mCurrentLon)
                 .build()
             mBaiduMap.setMyLocationData(mLocData)
         }
@@ -263,10 +288,10 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
             mLocClient.stop()
         }
         // 关闭定位图层
+        startBD?.recycle()
+        finishBD?.recycle()
         mBaiduMap.isMyLocationEnabled = false
         mMapView.onDestroy()
-        startBD.recycle()
-        finishBD.recycle()
         super.onDestroy()
     }
 
