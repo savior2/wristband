@@ -7,7 +7,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.RelativeLayout
@@ -79,6 +78,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         mStartRunButton = findViewById(R.id.start_run_button)
         mStartRunButton.setOnClickListener {
             if (!mLocClient.isStarted) {
+                mTimeSpanTextView.text = "00:00:00"
+                mDistanceTextView.text = "0.00"
                 mSearchBarRelativeLayout.visibility = View.VISIBLE
                 mBaiduMap.clear()
                 mLocClient.start()
@@ -95,14 +96,16 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                     return@setOnClickListener
                 }
 
-                Log.e(TAG, "position: ${mPoints[mPoints.size - 1]}")
-
                 val oFinish = MarkerOptions()// 地图标记覆盖物参数配置类
                 oFinish.position(mPoints[mPoints.size - 1])
                 oFinish.icon(finishBD)
                 mBaiduMap.addOverlay(oFinish) // 在地图上添加此图层
                 mPoints.clear()
                 mIsFirstLoc = true
+                mSpeedTextView.text = "0"
+                mDistance = 0.0
+                mRunTime = 0
+
             }
         }
         mSearchBarRelativeLayout = findViewById(R.id.search_progress_bar)
@@ -199,7 +202,6 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 return
             }
 
-            setRunTime(mRunTime++)
 
             //注意这里只接受gps点，需要在室外定位
             if (p0.locType == BDLocation.TypeGpsLocation) {
@@ -215,8 +217,10 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                     mBaiduMap.addOverlay(oStart)
                     return
                 }
+
                 //从第二个点开始
                 mSearchBarRelativeLayout.visibility = View.GONE
+                setRunTime(++mRunTime)
                 val ll = LatLng(p0.latitude, p0.longitude)
                 mSpeedTextView.text = "${p0.speed} km/h"
                 if (DistanceUtil.getDistance(mLastPoint, ll) < 5) {

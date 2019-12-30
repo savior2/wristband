@@ -35,7 +35,8 @@ class MainActivity : AppCompatActivity() {
         Thread {
             val result = WebUtil.checkIn(sid!!, password!!)
             //用户名密码错误，进入登录界面
-            if (result == WebUtil.FAIL) {
+            if (result != WebUtil.SUCCESS) {
+                val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 startActivity(intent)
                 finish()
             } else {

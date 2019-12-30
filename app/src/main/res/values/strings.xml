@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">浙工健行</string>
     <string name="welcome_text">Welcome</string>
-    <string name="user_id_text">学号：</string>
-    <string name="password_text">密码：</string>
+    <string name="user_id_text">请输入学号</string>
+    <string name="password_text">请输入密码</string>
     <string name="login_text">登录</string>
     <string name="logout_text">退出登录</string>
     <string name="user_name_text">姓名：</string>
@@ -15,6 +15,7 @@
     <string name="start_run_text">开始运动</string>
     <string name="finish_run_text">结束运动</string>
     <string name="device_manage_text">手环管理</string>
+    <string name="password_manage_text">修改密码</string>
     <string name="fun_disconnect_text">断开连接</string>
     <string name="fun_hr_detect_mode_text">心率监测管理</string>
     <string name="sync_steps_text">同步手环数据</string>
