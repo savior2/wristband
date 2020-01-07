@@ -1,11 +1,10 @@
-package com.zjut.wristband
+package com.zjut.wristband.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
-import com.zjut.wristband.activity.HomeActivity
-import com.zjut.wristband.activity.LoginActivity
+import com.zjut.wristband.R
 import com.zjut.wristband.util.*
 
 

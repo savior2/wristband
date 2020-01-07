@@ -29,6 +29,7 @@ import com.lifesense.ble.ReceiveDataCallback
 import com.lifesense.ble.SearchCallback
 import com.lifesense.ble.bean.LsDeviceInfo
 import com.lifesense.ble.bean.PedometerData
+import com.lifesense.ble.bean.SportNotify
 import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
 import com.lifesense.ble.bean.constant.PacketProfile
@@ -221,12 +222,12 @@ class DeviceConnectFragment : Fragment() {
     private inner class MyDataCallback : ReceiveDataCallback() {
         override fun onReceivePedometerMeasureData(p0: Any?, p1: PacketProfile?, p2: String?) {
             super.onReceivePedometerMeasureData(p0, p1, p2)
-            Log.e("TAG", "onReceivePedometerMeasureData: $p0")
+            Log.e(TAG, "onReceivePedometerMeasureData: $p0")
             when (p0) {
                 is List<*> -> {
                     val stat = p0[p0.size - 1] as PedometerData
                     Log.e(
-                        "TAG",
+                        TAG,
                         "onReceivePedometerMeasureData: time=${stat.measureTime} steps=${stat.walkSteps}"
                     )
                     val sp =
@@ -238,10 +239,17 @@ class DeviceConnectFragment : Fragment() {
             }
         }
 
+
         override fun onReceivePedometerData(p0: PedometerData?) {
             super.onReceivePedometerData(p0)
             Log.e(TAG, "onReceivePedometerData: $p0")
         }
+
+        override fun onPedometerSportsModeNotify(p0: String?, p1: SportNotify?) {
+            Log.e(TAG,"sports mode: $p0, ${p1?.toString()}")
+            super.onPedometerSportsModeNotify(p0, p1)
+        }
+
 
     }
 

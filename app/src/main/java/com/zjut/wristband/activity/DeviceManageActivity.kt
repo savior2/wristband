@@ -63,7 +63,7 @@ class DeviceManageActivity : AppCompatActivity() {
                     resources.getColor(R.color.white)
                 )
             }
-            builder.setOnCancelListener{
+            builder.setOnCancelListener {
                 mFunDisconnectLayout.setBackgroundColor(
                     resources.getColor(R.color.white)
                 )
@@ -100,14 +100,15 @@ class DeviceManageActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        resetLayoutColor()
-    }
 
     private fun resetLayoutColor() {
         mFunDisconnectLayout.setBackgroundColor(resources.getColor(R.color.white))
         mFunHrDetectModeLayout.setBackgroundColor(resources.getColor(R.color.white))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        resetLayoutColor()
     }
 
     companion object {

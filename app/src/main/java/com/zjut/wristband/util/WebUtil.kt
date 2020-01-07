@@ -2,6 +2,7 @@ package com.zjut.wristband.util
 
 import android.content.Context
 import android.net.ConnectivityManager
+import com.google.gson.JsonParseException
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -10,8 +11,9 @@ import org.json.JSONObject
 
 object WebUtil {
     private const val TAG = "WebUtil"
-    const val DOMAIN = "http://www.justrun.com.cn"
+    private const val DOMAIN = "http://www.justrun.com.cn"
     const val LOGIN_URI = "/api/sportsEquipment/getConnectServlet"
+    const val MODIFY_PASSWORD_URI = "/api/sportsEquipment/modifyPSWServlet"
     const val SUCCESS = 0
     const val FAIL = 1
     const val NETWORK_ERROR = 2
@@ -34,6 +36,27 @@ object WebUtil {
             }
         }
         return SUCCESS
+    }
+
+    fun modifyPassword(params: Map<String, String>): WCode {
+        doPost(DOMAIN + MODIFY_PASSWORD_URI, params) {
+            try {
+                val jsonObject = JSONObject(it)
+                when (jsonObject.getString("Code")) {
+                    "0" -> {
+                        return WCode.OK
+                    }
+                    "4" -> {
+                        return WCode.AccountError
+                    }
+                }
+            } catch (e: JsonParseException) {
+                return WCode.JsonParseError
+            } catch (e: Exception) {
+                return WCode.ServerError
+            }
+        }
+        return WCode.OK
     }
 
     inline fun doPost(url: String, body: Map<String, String>, callable: (String) -> Unit) {

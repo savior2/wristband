@@ -12,7 +12,9 @@
             android:id="@+id/device_manage_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -31,10 +33,12 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/password_manage_layout"
+            android:id="@+id/password_modify_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -48,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="15dp"
-                android:text="@string/password_manage_text"
+                android:text="@string/password_modify_text"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -56,7 +60,9 @@
             android:id="@+id/app_info_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
 
             <ImageView
                 android:layout_width="20dp"
@@ -78,7 +84,10 @@
             android:id="@+id/logout_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
 
             <ImageView
                 android:layout_width="20dp"
@@ -94,6 +103,31 @@
                 android:layout_marginStart="15dp"
                 android:text="@string/logout_text"
                 android:textColor="#FF1493"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/test_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_test" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="15dp"
+                android:text="@string/test_text"
+                android:textColor="#ABCDAB"
                 android:textSize="18sp" />
         </LinearLayout>
 

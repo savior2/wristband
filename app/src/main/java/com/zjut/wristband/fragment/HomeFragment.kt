@@ -62,7 +62,7 @@ class HomeFragment : Fragment() {
         }
         val d0 = Date().date.toString()
         val d1 = time!!.split(" ")[2]
-        if (d0 != d1) {
+        if (d0.toInt() != d1.toInt()) {
             mProcessBar.setCurrentValues(0f)
         } else {
             mProcessBar.setCurrentValues(steps.toFloat())

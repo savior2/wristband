@@ -1,4 +1,4 @@
-package com.zjut.wristband.application
+package com.zjut.wristband
 
 import android.app.Application
 import com.baidu.mapapi.SDKInitializer
