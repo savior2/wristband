@@ -4,13 +4,16 @@ import android.content.Context
 import android.net.ConnectivityManager
 import com.google.gson.JsonParseException
 import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import org.json.JSONObject
 
 
 object WebUtil {
     private const val TAG = "WebUtil"
+    val JSON = "application/json; charset=utf-8".toMediaType()
     private const val DOMAIN = "http://www.justrun.com.cn"
     const val LOGIN_URI = "/api/sportsEquipment/getConnectServlet"
     const val MODIFY_PASSWORD_URI = "/api/sportsEquipment/modifyPSWServlet"
@@ -65,6 +68,15 @@ object WebUtil {
             requestBodyBuilder.add(k, v)
         }
         val requestBody = requestBodyBuilder.build()
+        val request = Request.Builder().url(url).post(requestBody).build()
+        val client = OkHttpClient()
+        val response = client.newCall(request).execute()
+        val responseString = response.body?.string() ?: ""
+        callable(responseString)
+    }
+
+    inline fun doPostWithRawBody(url: String, body: String, callable: (String) -> Unit) {
+        val requestBody = RequestBody.create(JSON, body)
         val request = Request.Builder().url(url).post(requestBody).build()
         val client = OkHttpClient()
         val response = client.newCall(request).execute()

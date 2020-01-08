@@ -48,7 +48,10 @@ dependencies {
     implementation 'com.github.armcha:SpaceNavigationView:1.6.0'
     //noinspection GradleCompatible
     implementation 'com.android.support:recyclerview-v7:28.0.0'
-    //进度条
+    //步数进度条
     implementation 'com.github.shinelw:library:1.0.1'
-
+    //图表
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+    //下滑刷新
+    implementation 'com.github.nuptboyzhb.lib.uikit:superswiperefreshlayout:1.0.0'
 }

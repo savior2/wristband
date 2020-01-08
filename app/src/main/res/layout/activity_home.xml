@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    app:inactive_item_color="@color/white">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -11,14 +13,6 @@
 
 
         <include layout="@layout/module_title" />
-
-
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white"
-            android:layout_below="@+id/title_layout" />
 
         <com.luseen.spacenavigation.SpaceNavigationView
             android:id="@+id/space_navigation_view"
@@ -28,8 +22,14 @@
             app:active_item_color="#495A80"
             app:centre_button_color="@color/colorPrimary"
             app:centre_button_icon="@drawable/ic_run"
-            app:inactive_item_color="@color/white"
             app:space_background_color="@color/black" />
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/space_navigation_view"
+            android:layout_below="@+id/title_layout" />
 
     </RelativeLayout>
 

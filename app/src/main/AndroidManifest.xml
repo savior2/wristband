@@ -41,6 +41,7 @@
         <activity android:name=".activity.AboutActivity" />
         <activity android:name=".activity.PasswordModifyActivity" />
         <activity android:name=".activity.TestActivity" />
+        <activity android:name=".activity.DailyHeartRateActivity" />
         <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

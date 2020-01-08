@@ -39,7 +39,6 @@
 
     <ProgressBar
         android:id="@+id/process_bar"
-        style="@style/Spinner"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_gravity="center_horizontal"

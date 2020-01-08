@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/module_title" />
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
     <Button
         android:id="@+id/start"
         android:layout_width="wrap_content"
@@ -15,5 +22,20 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="停止运动" />
+
+    <Button
+        android:id="@+id/sports"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="上传运动数据" />
+
+
+    <SeekBar
+        android:id="@+id/seekBar2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:max="150"
+        android:paddingBottom="12dp" />
 
 </LinearLayout>
