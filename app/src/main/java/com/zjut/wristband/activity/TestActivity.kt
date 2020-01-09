@@ -20,14 +20,13 @@ import com.lifesense.ble.OnSettingListener
 import com.lifesense.ble.bean.SportRequestInfo
 import com.lifesense.ble.bean.constant.PedometerSportsType
 import com.zjut.wristband.R
-import com.zjut.wristband.util.MemoryVar
-import com.zjut.wristband.util.SharedPreFile
-import com.zjut.wristband.util.SharedPreKey
-import com.zjut.wristband.util.SharedPreUtil
+import com.zjut.wristband.model.DailyHeartInfo
+import com.zjut.wristband.util.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.litepal.LitePal
 
 
 class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
@@ -47,6 +46,7 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
     private lateinit var mStartButton: Button
     private lateinit var mStopButton: Button
     private lateinit var mUploadButton: Button
+    private lateinit var mTimeTransferButton: Button
 
     private lateinit var mLineChart: LineChart
 
@@ -64,10 +64,17 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
         mStopButton = findViewById(R.id.stop)
         mUploadButton = findViewById(R.id.sports)
         mLineChart = findViewById(R.id.line_chart)
+        mTimeTransferButton = findViewById(R.id.time_transfer)
         mToken = SharedPreUtil(this, SharedPreFile.ACCOUNT).getString(SharedPreKey.TOKEN) ?: ""
         run()
         upload()
         initLineChart()
+        mTimeTransferButton.setOnClickListener {
+            Log.e(TAG, TimeTransUtil.UtcToDate(1578579281L).toString())
+            LitePal.getDatabase()
+            val aa = DailyHeartInfo(11, 11, 0)
+            aa.save()
+        }
 
     }
 

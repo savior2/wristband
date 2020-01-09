@@ -1,5 +1,6 @@
 package com.zjut.wristband.activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -8,17 +9,22 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.*
+import com.github.mikephil.charting.components.LimitLine
+import com.github.mikephil.charting.components.MarkerView
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.github.mikephil.charting.utils.MPPointF
 import com.zjut.wristband.R
+import com.zjut.wristband.model.DailyHeartInfo
+import com.zjut.wristband.util.TimeTransUtil
+import org.litepal.LitePal
+import org.litepal.extension.findAll
 import java.text.SimpleDateFormat
-import java.util.*
 
 class DailyHeartRateActivity : AppCompatActivity() {
     private lateinit var mTitleTextView: TextView
@@ -60,10 +66,12 @@ class DailyHeartRateActivity : AppCompatActivity() {
         mXAxis.position = XAxis.XAxisPosition.BOTTOM
         mXAxis.setAvoidFirstLastClipping(true)
         mXAxis.setLabelCount(3, false)
-        val mFormat = SimpleDateFormat("dd MMM HH:mm", Locale.ENGLISH)
-       /* mXAxis.setValueFormatter { value, axis ->
-            mFormat.format(Date(value.toLong()))
-        }*/
+        mXAxis.setValueFormatter { value, axis ->
+            when {
+                value.toInt() <= 43200 -> "12:00"
+                else -> "23:59"
+            }
+        }
 
         mYAxisLeft.setDrawGridLines(false)
         mYAxisRight.setDrawGridLines(false)
@@ -78,30 +86,32 @@ class DailyHeartRateActivity : AppCompatActivity() {
         mYAxisLeft.addLimitLine(normal)
         mYAxisLeft.addLimitLine(quick)
         mYAxisLeft.addLimitLine(slow)
-        mYAxisLeft.setDrawGridLinesBehindData(true)
+        //mYAxisLeft.setDrawGridLinesBehindData(true)
 
-        setData(200, 150)
+        setData()
     }
 
-    private fun setData(count: Int, range: Int) {
+    @SuppressLint("SimpleDateFormat")
+    private fun setData() {
         val yVals1 = arrayListOf<Entry>()
         val yVals2 = arrayListOf<Entry>()
         val yVals3 = arrayListOf<Entry>()
-
-        for (i in 1..count) {
-            val mult = range / 2f
-            val value = (Math.random() * mult) + 50
-            yVals1.add(Entry(i.toFloat(), value.toFloat()))
+        val h = LitePal.findAll<DailyHeartInfo>()
+        if (h.size == 0) return
+        for (i in h) {
+            yVals1.add(Entry((i.utc % 86400).toFloat(), i.rate.toFloat()))
         }
 
+        val d = TimeTransUtil.UtcToDate(h[0].utc)
+        val f = SimpleDateFormat("M月dd日")
         // create a dataset and give it a type
-        val set1 = LineDataSet(yVals1, "数据1")
+        val set1 = LineDataSet(yVals1, f.format(d) + " 心率数据")
         //数据对应的是左边还是右边的Y值
         set1.axisDependency = YAxis.AxisDependency.LEFT
         //线条的颜色
         set1.color = ColorTemplate.rgb("00FFFF")
-        //表中数据圆点的颜色
         set1.setDrawCircles(false)
+        set1.setDrawValues(false)
         //表中数据线条的宽度
         set1.lineWidth = 1f
         //点中的十字的颜色
@@ -114,8 +124,11 @@ class DailyHeartRateActivity : AppCompatActivity() {
         MarkerView(context, layoutResource) {
         private val mHeartRateTextView: TextView = findViewById(R.id.heart_rate_text_view)
 
+        @SuppressLint("SetTextI18n", "SimpleDateFormat")
         override fun refreshContent(e: Entry?, highlight: Highlight?) {
-            mHeartRateTextView.text = e?.y.toString()
+            val date = TimeTransUtil.UtcToDate(e!!.x.toLong())
+            val f = SimpleDateFormat("HH:mm")
+            mHeartRateTextView.text = e.y.toString() + "次/分" + "\t" + f.format(date)
             super.refreshContent(e, highlight)
         }
 

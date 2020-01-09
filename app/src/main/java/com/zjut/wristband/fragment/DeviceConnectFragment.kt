@@ -27,14 +27,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lifesense.ble.LsBleManager
 import com.lifesense.ble.ReceiveDataCallback
 import com.lifesense.ble.SearchCallback
-import com.lifesense.ble.bean.LsDeviceInfo
-import com.lifesense.ble.bean.PedometerData
-import com.lifesense.ble.bean.SportNotify
+import com.lifesense.ble.bean.*
 import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
 import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
 import com.zjut.wristband.activity.HomeActivity
+import com.zjut.wristband.model.DailyHeartInfo
 import com.zjut.wristband.service.BleService
 import com.zjut.wristband.util.MemoryVar
 import com.zjut.wristband.util.SharedPreFile
@@ -236,6 +235,16 @@ class DeviceConnectFragment : Fragment() {
                     sp.editor.putInt(SharedPreKey.STEP, stat.walkSteps)
                     sp.editor.apply()
                 }
+                is PedometerHeartRateData -> {
+                    for (i in 0 until p0.heartRates.size) {
+                        val data = DailyHeartInfo(p0.heartRates[i] as Int, p0.utc + i * 300, 0)
+                        data.save()
+                    }
+                    Log.e(TAG, "haha,yes：${p0.heartRates}")
+                }
+                is PedometerSleepData -> {
+
+                }
             }
         }
 
@@ -246,11 +255,14 @@ class DeviceConnectFragment : Fragment() {
         }
 
         override fun onPedometerSportsModeNotify(p0: String?, p1: SportNotify?) {
-            Log.e(TAG,"sports mode: $p0, ${p1?.toString()}")
+            Log.e(TAG, "sports mode: $p0, ${p1?.toString()}")
             super.onPedometerSportsModeNotify(p0, p1)
         }
 
-
+        override fun onReceiveRealtimeMeasureData(p0: String?, p1: Any?) {
+            Log.e(TAG, "real data: $p0, ${p1?.toString()}")
+            super.onReceiveRealtimeMeasureData(p0, p1)
+        }
     }
 
     //internal很重要
