@@ -6,5 +6,7 @@
 
     <list>
 
+        <mapping class="com.zjut.wristband.model.DailyHeartInfo" />
+
     </list>
 </litepal>

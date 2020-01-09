@@ -39,6 +39,7 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
 
     }
 
+
     private lateinit var mTitleTextView: TextView
     private lateinit var mBackButton: Button
 
