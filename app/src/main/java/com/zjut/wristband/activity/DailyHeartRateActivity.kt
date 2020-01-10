@@ -23,6 +23,7 @@ import com.zjut.wristband.R
 import com.zjut.wristband.model.DailyHeartInfo
 import com.zjut.wristband.util.TimeTransUtil
 import org.litepal.LitePal
+import org.litepal.extension.find
 import org.litepal.extension.findAll
 import java.text.SimpleDateFormat
 
@@ -94,10 +95,12 @@ class DailyHeartRateActivity : AppCompatActivity() {
     @SuppressLint("SimpleDateFormat")
     private fun setData() {
         val yVals1 = arrayListOf<Entry>()
-        val yVals2 = arrayListOf<Entry>()
-        val yVals3 = arrayListOf<Entry>()
-        val h = LitePal.findAll<DailyHeartInfo>()
-        if (h.size == 0) return
+        val h = LitePal.where(
+            "utc > ? and utc < ?",
+            TimeTransUtil.getUtc().toString(),
+            TimeTransUtil.getUtc(1).toString()
+        ).order("utc asc").find<DailyHeartInfo>()
+        if (h.isEmpty()) return
         for (i in h) {
             yVals1.add(Entry((i.utc).toFloat(), i.rate.toFloat()))
         }

@@ -7,13 +7,14 @@ object TimeTransUtil {
     fun UtcToDate(utc: Long) = Date(utc * 1000)
     fun UtcToDateMillion(utc: Long) = Date(utc)
 
-    fun getTodayUtc(): Long = getTodayUtcMillion() / 1000
-    fun getTodayUtcMillion(): Long {
+    fun getUtc(p0: Int = 0): Long = getUtcMillion(p0) / 1000
+    fun getUtcMillion(p0: Int = 0): Long {
         val calendar = Calendar.getInstance()
         calendar.time = Date()
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + p0)
         return calendar.time.time
     }
 }

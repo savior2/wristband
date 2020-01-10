@@ -19,7 +19,7 @@
         app:is_need_content="true"
         app:is_need_title="true"
         app:is_need_unit="true"
-        app:max_value="6000"
+        app:max_value="8000"
         app:string_title="今日已走"
         app:string_unit="步"
         app:total_engle="270" />

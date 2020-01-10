@@ -245,6 +245,13 @@ class DeviceConnectFragment : Fragment() {
             }
         }
 
+        override fun onReceiveRealtimeMeasureData(p0: String?, p1: Any?) {
+            if (p1 is PedometerHeartRateData) {
+                Log.e(TAG, "real data: $p0, ${p1.heartRates}")
+            }
+            super.onReceiveRealtimeMeasureData(p0, p1)
+        }
+
 
         override fun onReceivePedometerData(p0: PedometerData?) {
             super.onReceivePedometerData(p0)
@@ -254,11 +261,6 @@ class DeviceConnectFragment : Fragment() {
         override fun onPedometerSportsModeNotify(p0: String?, p1: SportNotify?) {
             Log.e(TAG, "sports mode: $p0, ${p1?.toString()}")
             super.onPedometerSportsModeNotify(p0, p1)
-        }
-
-        override fun onReceiveRealtimeMeasureData(p0: String?, p1: Any?) {
-            Log.e(TAG, "real data: $p0, ${p1?.toString()}")
-            super.onReceiveRealtimeMeasureData(p0, p1)
         }
     }
 
