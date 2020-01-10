@@ -49,6 +49,7 @@ class DailyHeartRateActivity : AppCompatActivity() {
         initView()
     }
 
+    @SuppressLint("SimpleDateFormat")
     private fun initView() {
         mTitleTextView.text = "日常心率"
         mBackButton.visibility = View.VISIBLE
@@ -67,10 +68,9 @@ class DailyHeartRateActivity : AppCompatActivity() {
         mXAxis.setAvoidFirstLastClipping(true)
         mXAxis.setLabelCount(3, false)
         mXAxis.setValueFormatter { value, axis ->
-            when {
-                value.toInt() <= 43200 -> "12:00"
-                else -> "23:59"
-            }
+            val d = TimeTransUtil.UtcToDate(value.toLong())
+            val f = SimpleDateFormat("HH:mm")
+            f.format(d)
         }
 
         mYAxisLeft.setDrawGridLines(false)
@@ -99,7 +99,7 @@ class DailyHeartRateActivity : AppCompatActivity() {
         val h = LitePal.findAll<DailyHeartInfo>()
         if (h.size == 0) return
         for (i in h) {
-            yVals1.add(Entry((i.utc % 86400).toFloat(), i.rate.toFloat()))
+            yVals1.add(Entry((i.utc).toFloat(), i.rate.toFloat()))
         }
 
         val d = TimeTransUtil.UtcToDate(h[0].utc)

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -16,7 +17,6 @@ import com.github.nuptboyzhb.lib.SuperSwipeRefreshLayout
 import com.shinelw.library.ColorArcProgressBar
 import com.zjut.wristband.R
 import com.zjut.wristband.activity.DailyHeartRateActivity
-import com.zjut.wristband.util.MemoryVar
 import com.zjut.wristband.util.SharedPreFile
 import com.zjut.wristband.util.SharedPreKey
 import com.zjut.wristband.util.SharedPreUtil
@@ -72,6 +72,7 @@ class HomeFragment : Fragment() {
             override fun onPullEnable(p0: Boolean) {
                 mRefreshTextView.text = if (p0) "松开刷新" else "下拉刷新"
                 mRefreshImageView.visibility = View.VISIBLE
+                mRefreshProgressBar.visibility = View.GONE
                 mRefreshImageView.rotation = if (p0) 180f else 0f
             }
 
@@ -79,16 +80,10 @@ class HomeFragment : Fragment() {
             }
 
             override fun onRefresh() {
-                mRefreshTextView.text = "正在刷新"
-                mRefreshImageView.visibility = View.GONE
-                mRefreshProgressBar.visibility = View.VISIBLE
-                setSteps()
-                mHandler.postDelayed({
-                    mSwipeRefreshLayout.isRefreshing = false
-                    mRefreshProgressBar.visibility = View.GONE
-                }, 2000)
+                refresh()
             }
         })
+
         initLayoutClick()
     }
 
@@ -128,13 +123,31 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun refresh() {
+        mSwipeRefreshLayout.isRefreshing = true
+        mRefreshTextView.text = "正在刷新"
+        mRefreshImageView.visibility = View.GONE
+        mRefreshProgressBar.visibility = View.VISIBLE
+        mHandler.postDelayed({
+            setSteps()
+            mSwipeRefreshLayout.isRefreshing = false
+        }, 5000)
+    }
+
+
     private fun resetLayoutColor() {
         mDailyHeartRateLayout.setBackgroundColor(resources.getColor(R.color.white))
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if (hidden) {
+        if (!hidden) {
+            if (arguments != null) {
+                if (arguments!!.getString(ARGUMENTS_REFRESH) != null) {
+                    refresh()
+                    arguments!!.putString(ARGUMENTS_REFRESH, null)
+                }
+            }
             setSteps()
         }
     }
@@ -146,5 +159,6 @@ class HomeFragment : Fragment() {
 
     companion object {
         private val TAG = "HomeFragment"
+        val ARGUMENTS_REFRESH = "refresh"
     }
 }

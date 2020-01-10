@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -23,6 +24,8 @@ import com.luseen.spacenavigation.SpaceOnClickListener
 import com.zjut.wristband.R
 import com.zjut.wristband.fragment.DeviceConnectFragment
 import com.zjut.wristband.fragment.HomeFragment
+import com.zjut.wristband.util.BroadType.ACTION_DEVICE_BIND
+import kotlinx.android.synthetic.main.activity_map.*
 
 class HomeActivity : AppCompatActivity() {
 
@@ -106,7 +109,17 @@ class HomeActivity : AppCompatActivity() {
         transaction.commit()
     }
 
-    private fun replaceFragment(fragment: Fragment) {
+    private fun replaceFragment(
+        fragment: Fragment,
+        params: Map<String, String>? = null
+    ) {
+        if (params != null) {
+            val bundle = Bundle()
+            for (key in params.keys) {
+                bundle.putString(key, params[key])
+            }
+            fragment.arguments = bundle
+        }
         val transaction = supportFragmentManager.beginTransaction()
         transaction.hide(mCurrentFragment)
         if (fragment.isAdded) {
@@ -170,12 +183,11 @@ class HomeActivity : AppCompatActivity() {
 
     private inner class BindBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(p0: Context?, p1: Intent?) {
-            val action = p1?.action ?: return
-            when (action) {
+            when (p1?.action ?: return) {
                 ACTION_DEVICE_BIND -> {
                     mTitleTextView.text = "首页"
                     mCurrentIndex = INDEX_HOME
-                    replaceFragment(mHomeFragment)
+                    replaceFragment(mHomeFragment, mapOf(HomeFragment.ARGUMENTS_REFRESH to "start"))
                     mSpaceNavigationView.changeCurrentItem(mCurrentIndex)
                 }
                 else -> {
@@ -190,7 +202,6 @@ class HomeActivity : AppCompatActivity() {
         private val INDEX_HOME = 0
         private val INDEX_DEVICE = 1
         private val REQUEST_CODE_ACCESS_COARSE_LOCATION = 1
-        val ACTION_DEVICE_BIND = "com.zjut.wristband.ACTION_DEVICE_BIND"
     }
 
 }

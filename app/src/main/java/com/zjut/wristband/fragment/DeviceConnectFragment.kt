@@ -35,10 +35,7 @@ import com.zjut.wristband.R
 import com.zjut.wristband.activity.HomeActivity
 import com.zjut.wristband.model.DailyHeartInfo
 import com.zjut.wristband.service.BleService
-import com.zjut.wristband.util.MemoryVar
-import com.zjut.wristband.util.SharedPreFile
-import com.zjut.wristband.util.SharedPreKey
-import com.zjut.wristband.util.SharedPreUtil
+import com.zjut.wristband.util.*
 import java.util.*
 
 class DeviceConnectFragment : Fragment() {
@@ -311,7 +308,7 @@ class DeviceConnectFragment : Fragment() {
                             R.color.white
                         )
                     )
-                    sendBindBroadcast(HomeActivity.ACTION_DEVICE_BIND)
+                    sendBindBroadcast(BroadType.ACTION_DEVICE_BIND)
                 }
                 builder.setNegativeButton("取消") { _, _ ->
                     itemView.setBackgroundColor(
