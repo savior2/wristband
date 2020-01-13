@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <litepal>
-    <dbname value="BookStore" />
+    <dbname value="WristbandInfo" />
 
     <version value="1" />
 
     <list>
 
         <mapping class="com.zjut.wristband.model.DailyHeartInfo" />
+        <mapping class="com.zjut.wristband.model.AerobicsInfo" />
+        <mapping class="com.zjut.wristband.model.AerobicsHeartInfo" />
+        <mapping class="com.zjut.wristband.model.AerobicsPositionInfo" />
 
     </list>
 </litepal>

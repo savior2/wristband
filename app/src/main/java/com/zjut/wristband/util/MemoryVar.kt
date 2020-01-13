@@ -8,4 +8,5 @@ object MemoryVar {
     var sex: String? = null
     var token: String? = null
     var device: LsDeviceInfo? = null
+    var aerobicsNum: Int? = null
 }

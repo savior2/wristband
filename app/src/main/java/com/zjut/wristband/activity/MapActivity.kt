@@ -7,10 +7,14 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Message
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.baidu.location.BDLocation
 import com.baidu.location.BDLocationListener
@@ -18,9 +22,18 @@ import com.baidu.location.LocationClient
 import com.baidu.location.LocationClientOption
 import com.baidu.mapapi.map.*
 import com.baidu.mapapi.model.LatLng
+import com.google.gson.Gson
+import com.lifesense.ble.LsBleManager
+import com.lifesense.ble.OnSettingListener
 import com.zjut.wristband.R
-import com.zjut.wristband.util.DistanceUtil
-import com.zjut.wristband.util.LogUtil
+import com.zjut.wristband.model.AerobicsHeartInfo
+import com.zjut.wristband.model.AerobicsInfo
+import com.zjut.wristband.model.AerobicsJson
+import com.zjut.wristband.model.AerobicsPositionInfo
+import com.zjut.wristband.util.*
+import org.litepal.LitePal
+import org.litepal.extension.find
+import org.litepal.extension.findLast
 
 class MapActivity : AppCompatActivity(), SensorEventListener {
 
@@ -59,6 +72,27 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
     private val startBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_start)
     private val finishBD = BitmapDescriptorFactory.fromResource(R.drawable.ic_end)
 
+    private val mHandler = @SuppressLint("HandlerLeak")
+    object : Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            when (msg.what) {
+                WCode.OK.num -> {
+                    Toast.makeText(this@MapActivity, "上传成功！", Toast.LENGTH_SHORT).show()
+                    mSearchTextView.text = "GPS信号搜索中，请稍后..."
+                    mSearchBarRelativeLayout.visibility = View.GONE
+                    val heartInfo = AerobicsHeartInfo()
+                    heartInfo.status = 1
+                    heartInfo.updateAll("status = 0")
+                    val positionInfo = AerobicsPositionInfo()
+                    positionInfo.status = 1
+                    positionInfo.updateAll("status = 0")
+                    MemoryVar.aerobicsNum = null
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -66,6 +100,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         initMap()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initView() {
         mTitleTextView = findViewById(R.id.title_text_view)
         mTitleTextView.text = "跑步"
@@ -76,8 +111,23 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         mTimeSpanTextView = findViewById(R.id.time_span_text_view)
         mSpeedTextView = findViewById(R.id.speed_text_view)
         mStartRunButton = findViewById(R.id.start_run_button)
+        mSearchBarRelativeLayout = findViewById(R.id.search_progress_bar)
+        mSearchTextView = findViewById(R.id.search_text_view)
         mStartRunButton.setOnClickListener {
             if (!mLocClient.isStarted) {
+                if (MemoryVar.aerobicsNum == null) {
+                    var num = LitePal.order("num").findLast<AerobicsInfo>()?.num ?: 0
+                    Log.e(TAG, "num: $num")
+                    num += 1
+                    val info = AerobicsInfo(
+                        num,
+                        MemoryVar.sid!!,
+                        MemoryVar.device!!.macAddress.replace(":", "").toLowerCase(),
+                        TimeTransUtil.getUtcNowMillion()
+                    )
+                    info.save()
+                    MemoryVar.aerobicsNum = num
+                }
                 mTimeSpanTextView.text = "00:00:00"
                 mDistanceTextView.text = "0.00"
                 mSearchBarRelativeLayout.visibility = View.VISIBLE
@@ -89,6 +139,52 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         mFinishRunButton.setOnClickListener {
             mSearchBarRelativeLayout.visibility = View.GONE
             if (mLocClient.isStarted) {
+                LsBleManager.getInstance()
+                    .setRealtimeHeartRateSyncState(MemoryVar.device!!.macAddress, false, object :
+                        OnSettingListener() {
+                        override fun onSuccess(p0: String?) {
+                            super.onSuccess(p0)
+                        }
+
+                        override fun onFailure(p0: Int) {
+                            super.onFailure(p0)
+                        }
+                    })
+                val gson = Gson()
+                val t = LitePal.findLast<AerobicsInfo>().startUtc
+                val hearts = LitePal.where("status = 0").order("utc asc").find<AerobicsHeartInfo>()
+                val positions =
+                    LitePal.where("status = 0").order("utc asc").find<AerobicsPositionInfo>()
+                var heartString = ""
+                var positionString = ""
+                var speedString = ""
+                for (i in hearts.indices) {
+                    heartString += "${hearts[i].utc},${hearts[i].rate},"
+                }
+                for (i in positions.indices) {
+                    positionString += "${positions[i].utc},lng${positions[i].longitude},lat${positions[i].latitude},"
+                    speedString += "${positions[i].utc},${positions[i].speed},"
+                }
+                val token =
+                    SharedPreUtil(this, SharedPreFile.ACCOUNT).getString(SharedPreKey.TOKEN)!!
+                val info = AerobicsJson(
+                    token,
+                    MemoryVar.device!!.macAddress,
+                    t.toString(),
+                    positionString,
+                    speedString,
+                    heartString
+                )
+                Log.e(TAG, gson.toJson(info))
+                mSearchTextView.text = "正在上传数据..."
+                mSearchBarRelativeLayout.visibility = View.VISIBLE
+                Thread {
+                    val code = WebUtil.postAerobicsInfo(gson.toJson(info))
+                    Log.e(TAG, "code: ${code.num}")
+                    val message = mHandler.obtainMessage()
+                    message.what = code.num
+                    mHandler.sendMessage(message)
+                }.start()
                 mLocClient.stop()
                 mLastPoint = LatLng(0.0, 0.0)
                 if (mIsFirstLoc) {
@@ -105,11 +201,9 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 mSpeedTextView.text = "0"
                 mDistance = 0.0
                 mRunTime = 0
-
             }
         }
-        mSearchBarRelativeLayout = findViewById(R.id.search_progress_bar)
-        mSearchTextView = findViewById(R.id.search_text_view)
+
     }
 
     private fun initMap() {
@@ -178,8 +272,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         val mLocData = MyLocationData.Builder().accuracy(0f)
             .direction(mCurrentDirection.toFloat()).latitude(ll.latitude)
             .longitude(ll.longitude).build()
-        LogUtil.e(TAG, "map: ${mBaiduMap}")
-        LogUtil.e(TAG, "locData: ${mLocData}")
+        LogUtil.e(TAG, "map: $mBaiduMap")
+        LogUtil.e(TAG, "locData: $mLocData")
         mBaiduMap.setMyLocationData(mLocData)
 
         val builder = MapStatus.Builder()
@@ -202,7 +296,6 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 return
             }
 
-
             //注意这里只接受gps点，需要在室外定位
             if (p0.locType == BDLocation.TypeGpsLocation) {
                 if (mIsFirstLoc) {
@@ -221,8 +314,28 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 //从第二个点开始
                 mSearchBarRelativeLayout.visibility = View.GONE
                 setRunTime(++mRunTime)
+                LsBleManager.getInstance()
+                    .setRealtimeHeartRateSyncState(MemoryVar.device!!.macAddress, true, object :
+                        OnSettingListener() {
+                        override fun onSuccess(p0: String?) {
+                            super.onSuccess(p0)
+                        }
+
+                        override fun onFailure(p0: Int) {
+                            super.onFailure(p0)
+                        }
+                    })
                 val ll = LatLng(p0.latitude, p0.longitude)
                 mSpeedTextView.text = "${p0.speed} km/h"
+                val posInfo = AerobicsPositionInfo(
+                    p0.longitude.toString(),
+                    p0.latitude.toString(),
+                    p0.speed.toDouble(),
+                    TimeTransUtil.getUtcNowMillion(),
+                    MemoryVar.aerobicsNum!!,
+                    0
+                )
+                posInfo.save()
                 if (DistanceUtil.getDistance(mLastPoint, ll) < 5) {
                     return
                 }

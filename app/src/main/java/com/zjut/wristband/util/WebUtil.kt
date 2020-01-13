@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONException
 import org.json.JSONObject
 
 
@@ -54,6 +55,24 @@ object WebUtil {
                     }
                 }
             } catch (e: JsonParseException) {
+                return WCode.JsonParseError
+            } catch (e: Exception) {
+                return WCode.ServerError
+            }
+        }
+        return WCode.OK
+    }
+
+    fun postAerobicsInfo(body: String): WCode {
+        doPostWithRawBody("http://47.99.157.159:9898/uploadTestData", body) {
+            try {
+                val jsonObject = JSONObject(it)
+                when (jsonObject.getString("Code")) {
+                    "0" -> {
+                        return WCode.OK
+                    }
+                }
+            } catch (e: JSONException) {
                 return WCode.JsonParseError
             } catch (e: Exception) {
                 return WCode.ServerError

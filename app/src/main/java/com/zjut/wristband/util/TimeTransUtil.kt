@@ -17,4 +17,11 @@ object TimeTransUtil {
         calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + p0)
         return calendar.time.time
     }
+
+    fun getUtcNow(): Long = getUtcNowMillion() / 1000
+    fun getUtcNowMillion(): Long {
+        val calendar = Calendar.getInstance()
+        calendar.time = Date()
+        return calendar.time.time
+    }
 }

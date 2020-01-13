@@ -32,7 +32,7 @@ import com.lifesense.ble.bean.constant.BroadcastType
 import com.lifesense.ble.bean.constant.DeviceType
 import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
-import com.zjut.wristband.activity.HomeActivity
+import com.zjut.wristband.model.AerobicsHeartInfo
 import com.zjut.wristband.model.DailyHeartInfo
 import com.zjut.wristband.service.BleService
 import com.zjut.wristband.util.*
@@ -237,7 +237,6 @@ class DeviceConnectFragment : Fragment() {
                         val data = DailyHeartInfo(p0.heartRates[i] as Int, p0.utc + i * 300, 0)
                         data.save()
                     }
-                    Log.e(TAG, "haha,yes：${p0.heartRates}")
                 }
                 is PedometerSleepData -> {
 
@@ -247,6 +246,14 @@ class DeviceConnectFragment : Fragment() {
 
         override fun onReceiveRealtimeMeasureData(p0: String?, p1: Any?) {
             if (p1 is PedometerHeartRateData) {
+                Log.e(TAG, "real data: $p0, ${p1.heartRates}")
+                if (MemoryVar.aerobicsNum != null) {
+                    val info = AerobicsHeartInfo(
+                        p1.heartRates[0] as Int, p1.utc,
+                        MemoryVar.aerobicsNum!!, 0
+                    )
+                    info.save()
+                }
                 Log.e(TAG, "real data: $p0, ${p1.heartRates}")
             }
             super.onReceiveRealtimeMeasureData(p0, p1)

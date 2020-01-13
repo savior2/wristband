@@ -29,6 +29,7 @@ object SharedPreKey {
     const val NAME = "name"
     const val SEX = "sex"
     const val TOKEN = "token"
+    const val MAC_ADDRESS = "mac_address"
 
     const val TIME = "time"
     const val STEP = "step"
