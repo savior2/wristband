@@ -11,10 +11,7 @@ import android.os.Handler
 import android.os.Message
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.RelativeLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.baidu.location.BDLocation
 import com.baidu.location.BDLocationListener
@@ -40,6 +37,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var mTitleTextView: TextView
     private lateinit var mBackButton: Button
 
+    private lateinit var mZoomImageView: ImageView
     private lateinit var mDistanceTextView: TextView
     private lateinit var mTimeSpanTextView: TextView
     private lateinit var mSpeedTextView: TextView
@@ -93,6 +91,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    private var mIsStarted = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
@@ -103,17 +103,29 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
     @SuppressLint("SetTextI18n")
     private fun initView() {
         mTitleTextView = findViewById(R.id.title_text_view)
-        mTitleTextView.text = "跑步"
+        mTitleTextView.text = "运动"
         mBackButton = findViewById(R.id.back_button)
         mBackButton.setOnClickListener { this.finish() }
         mBackButton.visibility = View.VISIBLE
+
+        mZoomImageView = findViewById(R.id.zoom_image_view)
+        mZoomImageView.setOnClickListener {
+        }
+
         mDistanceTextView = findViewById(R.id.distance_text_view)
         mTimeSpanTextView = findViewById(R.id.time_span_text_view)
         mSpeedTextView = findViewById(R.id.speed_text_view)
         mStartRunButton = findViewById(R.id.start_run_button)
+        mFinishRunButton = findViewById(R.id.finish_run_button)
         mSearchBarRelativeLayout = findViewById(R.id.search_progress_bar)
         mSearchTextView = findViewById(R.id.search_text_view)
+
         mStartRunButton.setOnClickListener {
+            if (MemoryVar.device == null) {
+                Toast.makeText(this, "请先连接手环！", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (!mLocClient.isStarted) {
                 if (MemoryVar.aerobicsNum == null) {
                     var num = LitePal.order("num").findLast<AerobicsInfo>()?.num ?: 0
@@ -135,7 +147,6 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 mLocClient.start()
             }
         }
-        mFinishRunButton = findViewById(R.id.finish_run_button)
         mFinishRunButton.setOnClickListener {
             mSearchBarRelativeLayout.visibility = View.GONE
             if (mLocClient.isStarted) {
@@ -151,7 +162,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                         }
                     })
                 val gson = Gson()
-                val t = LitePal.findLast<AerobicsInfo>().startUtc
+                val t = LitePal.findLast<AerobicsInfo>()
                 val hearts = LitePal.where("status = 0").order("utc asc").find<AerobicsHeartInfo>()
                 val positions =
                     LitePal.where("status = 0").order("utc asc").find<AerobicsPositionInfo>()
@@ -169,8 +180,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                     SharedPreUtil(this, SharedPreFile.ACCOUNT).getString(SharedPreKey.TOKEN)!!
                 val info = AerobicsJson(
                     token,
-                    MemoryVar.device!!.macAddress,
-                    t.toString(),
+                    t.deviceId,
+                    t.startUtc.toString(),
                     positionString,
                     speedString,
                     heartString
@@ -209,6 +220,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
     private fun initMap() {
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         mMapView = findViewById(R.id.map)
+        mMapView.showZoomControls(false)
         mBaiduMap = mMapView.map
         mBaiduMap.isMyLocationEnabled = true
         mBaiduMap.setMyLocationConfiguration(
@@ -221,6 +233,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
             }
 
             override fun onMapStatusChangeStart(p0: MapStatus?, p1: Int) {
+
             }
 
             override fun onMapStatusChange(p0: MapStatus?) {
@@ -266,10 +279,10 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
         return null
     }
 
-    private fun locate(ll: LatLng) {
+    private fun locate(ll: LatLng, accracy: Float = 0f) {
         mCurrentLat = ll.latitude
         mCurrentLon = ll.longitude
-        val mLocData = MyLocationData.Builder().accuracy(0f)
+        val mLocData = MyLocationData.Builder().accuracy(accracy)
             .direction(mCurrentDirection.toFloat()).latitude(ll.latitude)
             .longitude(ll.longitude).build()
         LogUtil.e(TAG, "map: $mBaiduMap")
@@ -295,6 +308,8 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
             if (p0 == null) {
                 return
             }
+
+            locate(LatLng(p0.latitude, p0.longitude), p0.radius)
 
             //注意这里只接受gps点，需要在室外定位
             if (p0.locType == BDLocation.TypeGpsLocation) {
@@ -330,7 +345,7 @@ class MapActivity : AppCompatActivity(), SensorEventListener {
                 val posInfo = AerobicsPositionInfo(
                     p0.longitude.toString(),
                     p0.latitude.toString(),
-                    p0.speed.toDouble(),
+                    String.format("%.2f", p0.speed).toDouble(),
                     TimeTransUtil.getUtcNowMillion(),
                     MemoryVar.aerobicsNum!!,
                     0

@@ -1,6 +1,7 @@
 package com.zjut.wristband
 
 import android.app.Application
+import androidx.multidex.MultiDex
 import com.baidu.mapapi.SDKInitializer
 import com.lifesense.ble.LsBleManager
 import org.litepal.LitePal
@@ -10,6 +11,8 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        MultiDex.install(this)
 
         //initialize baidu SDK
         SDKInitializer.initialize(this)
@@ -25,7 +28,6 @@ class MyApplication : Application() {
 
         //register message service
         LsBleManager.getInstance().registerMessageService()
-
 
     }
 }

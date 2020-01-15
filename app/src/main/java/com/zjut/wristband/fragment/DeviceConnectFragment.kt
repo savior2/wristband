@@ -29,6 +29,7 @@ import com.lifesense.ble.ReceiveDataCallback
 import com.lifesense.ble.SearchCallback
 import com.lifesense.ble.bean.*
 import com.lifesense.ble.bean.constant.BroadcastType
+import com.lifesense.ble.bean.constant.DeviceConnectState
 import com.lifesense.ble.bean.constant.DeviceType
 import com.lifesense.ble.bean.constant.PacketProfile
 import com.zjut.wristband.R
@@ -201,7 +202,7 @@ class DeviceConnectFragment : Fragment() {
                 return
             }
             for (device in mDeviceList) {
-                if (lsDeviceInfo.macAddress == device.getMacAddress()) {
+                if (lsDeviceInfo.macAddress == device.macAddress) {
                     has = true
                     break
                 }
@@ -216,6 +217,22 @@ class DeviceConnectFragment : Fragment() {
     }
 
     private inner class MyDataCallback : ReceiveDataCallback() {
+        override fun onDeviceConnectStateChange(p0: DeviceConnectState?, p1: String?) {
+            super.onDeviceConnectStateChange(p0, p1)
+            when (p0) {
+                DeviceConnectState.CONNECTED_SUCCESS -> {
+                    Log.e(TAG, "connect success")
+                }
+                DeviceConnectState.DISCONNECTED -> {
+                    Log.e(TAG, "disconnect")
+                }
+                else -> {
+
+                }
+            }
+            Log.e(TAG, "$p0")
+        }
+
         override fun onReceivePedometerMeasureData(p0: Any?, p1: PacketProfile?, p2: String?) {
             super.onReceivePedometerMeasureData(p0, p1, p2)
             Log.e(TAG, "onReceivePedometerMeasureData: $p0")

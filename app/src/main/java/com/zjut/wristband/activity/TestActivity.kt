@@ -7,11 +7,12 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
@@ -20,14 +21,10 @@ import com.lifesense.ble.OnSettingListener
 import com.lifesense.ble.bean.SportRequestInfo
 import com.lifesense.ble.bean.constant.PedometerSportsType
 import com.zjut.wristband.R
-import com.zjut.wristband.model.AerobicsHeartInfo
 import com.zjut.wristband.model.AerobicsPositionInfo
 import com.zjut.wristband.model.DailyHeartInfo
 import com.zjut.wristband.util.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
 import org.litepal.LitePal
 
 
@@ -51,6 +48,7 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
     private lateinit var mTimeTransferButton: Button
 
     private lateinit var mLineChart: LineChart
+    private lateinit var mPieChart: PieChart
 
     private lateinit var mToken: String
 
@@ -66,11 +64,13 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
         mStopButton = findViewById(R.id.stop)
         mUploadButton = findViewById(R.id.sports)
         mLineChart = findViewById(R.id.line_chart)
+        mPieChart = findViewById(R.id.pie_chart)
         mTimeTransferButton = findViewById(R.id.time_transfer)
         mToken = SharedPreUtil(this, SharedPreFile.ACCOUNT).getString(SharedPreKey.TOKEN) ?: ""
         run()
         upload()
         initLineChart()
+        initPieChart()
         mTimeTransferButton.setOnClickListener {
             Log.e(TAG, TimeTransUtil.UtcToDate(1578579281L).toString())
             LitePal.getDatabase()
@@ -78,6 +78,38 @@ class TestActivity : AppCompatActivity(), OnChartValueSelectedListener {
             aa.save()
         }
 
+    }
+
+    private fun initPieChart() {
+        mPieChart.centerText = "运动数据分布"
+        mPieChart.description.isEnabled = false
+        mPieChart.legend.isEnabled = false
+        mPieChart.animateY(1400, Easing.EasingOption.EaseInOutQuad)
+        mPieChart.rotationAngle = -15f
+        mPieChart.setExtraOffsets(26F, 5F, 26F, 5F)
+        mPieChart.setUsePercentValues(true)
+        mPieChart.setEntryLabelColor(Color.BLACK)
+        val yVals1 = arrayListOf<PieEntry>()
+        yVals1.add(PieEntry(20f, "计算机"))
+        yVals1.add(PieEntry(10f, "数学"))
+        yVals1.add(PieEntry(40f, "英语"))
+        yVals1.add(PieEntry(5f, "体育"))
+        val set = PieDataSet(yVals1, "test")
+        val colors = arrayListOf<Int>()
+        for (c in ColorTemplate.VORDIPLOM_COLORS) {
+            colors.add(c)
+        }
+        set.colors = colors
+        set.yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        //set.valueFormatter = PercentFormatter()
+        set.valueLineColor = Color.LTGRAY
+        set.valueTextColor = Color.DKGRAY
+        set.valueTextSize = 10F
+        set.sliceSpace = 1f
+        set.isHighlightEnabled = true
+
+        mPieChart.data = PieData(set)
+        //mPieChart.animateX(2500)
     }
 
 

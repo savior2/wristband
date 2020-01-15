@@ -14,6 +14,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -54,4 +55,6 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
     //下滑刷新
     implementation 'com.github.nuptboyzhb.lib.uikit:superswiperefreshlayout:1.0.0'
+
+    implementation 'com.android.support:multidex:1.0.3'
 }
